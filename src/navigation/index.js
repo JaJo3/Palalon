@@ -1,31 +1,21 @@
-import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { useEffect } from 'react';
+import { Platform, StatusBar, useColorScheme } from 'react-native';
 
-// Screens
-import HomeScreen from '../screen/HomeScreen';
-import ProfileScreen from '../screen/ProfileScreen';
+import AuthNav from './AuthNav';
 
-// Utils
-import { ROUTES } from '../utils';
+export default () => {  
+  const isDarkMode = useColorScheme() === 'dark';
 
-const Stack = createStackNavigator();
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      StatusBar.setBarStyle('dark-content', true);
+    }
+  }, [isDarkMode]);
 
-const MainNavigation = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen
-          name={ROUTES.HOME}
-          component={HomeScreen}
-        />
-        <Stack.Screen
-          name={ROUTES.PROFILE}
-          component={ProfileScreen}
-        />
-      </Stack.Navigator>
+      <AuthNav/>
     </NavigationContainer>
   );
 };
-
-export default MainNavigation;
