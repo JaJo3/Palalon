@@ -1,18 +1,18 @@
 import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
 import { ROUTES } from '../utils';
 
 // Screens
 import Login from '../screen/auth/Login';
-import HomeScreen from '../screen/HomeScreen';
+import Register from '../screen/auth/Register';
 
 const Stack = createStackNavigator();
 
 // Utils
 const AuthNavigation = () => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator initialRouteName={ROUTES.LOGIN} screenOptions={{ headerShown: false }}>
       <Stack.Screen name={ROUTES.LOGIN} component={Login} />
+      <Stack.Screen name={ROUTES.REGISTER} component={Register} />
     </Stack.Navigator>
   );
 };
