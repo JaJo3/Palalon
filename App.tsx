@@ -1,20 +1,19 @@
 import React from 'react';
-import { View } from 'react-native';
-import { verifyInstallation } from 'nativewind';
-
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'react-native';
+import { useColorScheme } from 'react-native';
 
 // Import your navigation
 import MainNavigation from './src/navigation';
-import { Text } from 'react-native-gesture-handler';
-
- const App : () => Element = () : Element => {
-      verifyInstallation();
+ 
+function App() {
+  const isDarkMode = useColorScheme() === 'dark';
 
   return ( 
-    <View className="flex-1 bg-black items-center justify-center gap-4">
-     <Text className="text-white font-extrabold" >TEST101</Text>
-     <Text className="text-white font-extrabold" >GWAPO KO</Text>
-    </View>
+    <SafeAreaProvider>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <MainNavigation />
+    </SafeAreaProvider>
   );
 };
 
