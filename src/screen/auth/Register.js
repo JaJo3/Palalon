@@ -17,7 +17,6 @@ const Register = ({ navigation }) => {
       return;
     }
     try {
-      // TODO: Call register API
       Alert.alert('Success', 'Account created! Please login.');
       navigation?.goBack();
     } catch (err) {
@@ -65,7 +64,9 @@ const Register = ({ navigation }) => {
       </TouchableOpacity>
 
       <View style={{ flexDirection: 'row', marginTop: 20 }}>
-        <Text style={{ fontSize: 14, color: '#555' }}>Already have an account? </Text>
+        <Text style={{ fontSize: 14, color: '#555' }}>
+          Already have an account?{' '}
+        </Text>
         <TouchableOpacity onPress={() => navigation?.goBack()}>
           <Text style={{ fontSize: 14, color: '#391190', fontWeight: '600' }}>
             Login

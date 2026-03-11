@@ -1,42 +1,34 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 const BASE_URL = 'http://10.0.2.2:8000/api';
 
-export const loginApi = async data => {
-  const response = await fetch(`${BASE_URL}/login`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data),
-  });
-
-  return response.json();
+let options = {
+  method: 'POST',
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  },
 };
 
-export const getMeApi = async token => {
-  const response = await fetch(`${BASE_URL}/me`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export async function authLogin({ username, password }) {
+  try {
+    const responseBody = await fetch(BASE_URL + '/login', {
+      ...options,
+      body: JSON.stringify({
+        username: username,
+        password: password,
+      }),
+    });
 
-  return response.json();
-};
+    const data = await responseBody.json();
+    console.log('Response data:', data);
 
-export const logoutApi = async token => {
-  const response = await fetch(`${BASE_URL}/logout`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  return response.json();
-};
+    if (responseBody.status === 200) {
+      console.log('LOGIN SUCCESS - Token received');
+      return data;
+    } else {
+      throw new Error(data.errors?.password || 'Login failed');
+    }
+  } catch (error) {
+    console.error('LOGIN ERROR:', error.message);
+    throw error;
+  }
+}

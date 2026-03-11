@@ -1,20 +1,22 @@
 import React from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StatusBar } from 'react-native';
-import { useColorScheme } from 'react-native';
-
-// Import your navigation
 import MainNavigation from './src/navigation';
- 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+import rootSaga from './src/app/sagas';
+import configureStore from './src/app/reducers';
 
-  return ( 
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <MainNavigation />
-    </SafeAreaProvider>
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+
+const { store, persistor, runSaga } = configureStore();
+runSaga(rootSaga);
+
+function App() {
+  return (
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <MainNavigation />
+      </PersistGate>
+    </Provider>
   );
-};
+}
 
 export default App;

@@ -1,44 +1,49 @@
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import React, { useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState, useEffect } from 'react';
 import CustomTextInput from '../../components/CustomTextInput';
-import { loginApi } from '../../app/api/auth';
+import { useNavigation } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import { USER_LOGIN } from '../../app/actions';
 
-const Login = ({ navigation }) => {
-  const [emailAdd, setEmailAdd] = useState('');
+const Login = () => {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!emailAdd || !password) {
-      Alert.alert('Error', 'Please enter email and password');
-      return;
-    }
-    try {
-      setLoading(true);
-      const result = await loginApi({ email: emailAdd, password });
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const { isLoading, isError, data } = useSelector(state => state.auth);
 
-      if (result.token) {
-        // Save token to AsyncStorage for authenticated requests
-        await AsyncStorage.setItem('auth_token', result.token);
-      }
-
-      Alert.alert('Success', `Welcome ${result.name || emailAdd}`);
+  useEffect(() => {
+    if (data && !isLoading && !isError) {
+      // console.log('Login Success! User Data:', data);
+      // console.log('Received Token:', data.token);
+     // Alert.alert('Success', `Welcome ${data.name || username}`);
       // TODO: Uncomment to navigate after successful login
       // navigation?.replace('MainNav');
-    } catch (err) {
-      Alert.alert('Login Failed', err.message || 'Please try again');
-    } finally {
-      setLoading(false);
     }
+    // if (isError && !isLoading) {
+    //   console.log('LOGIN FAILED:', isError);
+    //   Alert.alert('Login Failed', isError || 'Please try again');
+    // }
+  }, [data, isLoading, isError, username]);
+
+  const handleLogin = async () => {
+    if (!username || !password) {
+      Alert.alert('Error', 'Please enter username and password');
+      return;
+    }
+    console.log('Username:', username);
+    console.log('Password:', password);
+
+    dispatch({ type: USER_LOGIN, payload: { username, password } });
   };
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <CustomTextInput
-        label="Email Address"
-        placeholder="Enter your email address"
-        value={emailAdd}
-        onChangeText={setEmailAdd}
+        label="Username"
+        placeholder="Enter your username"
+        value={username}
+        onChangeText={setUsername}
       />
       <CustomTextInput
         label="Password"
