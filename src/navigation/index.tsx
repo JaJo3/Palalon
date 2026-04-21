@@ -1,14 +1,16 @@
 // utils
 import { NavigationContainer } from '@react-navigation/native';
-import { useEffect } from 'react';
+import React, { FC, useEffect } from 'react';
 import { Platform, StatusBar, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 import AuthNav from './AuthNav';
 import MainNav from './MainNav';
+import { RootState } from '../app/reducers/index';
 
-export default () => {
+// Root navigation that conditionally shows AuthNav or MainNav based on user auth state
+const RootNavigation: FC = () => {
   const isDarkMode = useColorScheme() === 'dark';
-  const { data } = useSelector(state => state.auth);
+  const { data } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -19,7 +21,9 @@ export default () => {
   console.log(data);
   return (
     <NavigationContainer>
-        {data && (data.access_token || data.token) ? <MainNav /> : <AuthNav /> }
+      {data && (data.access_token || data.token) ? <MainNav /> : <AuthNav />}
     </NavigationContainer>
   );
 };
+
+export default RootNavigation;

@@ -1,13 +1,16 @@
 import { useNavigation } from '@react-navigation/native';
 import { Image, Pressable, Text, View } from 'react-native';
+import React, { FC } from 'react';
 import { IMG, ROUTES } from '../utils';
 import { useDispatch } from 'react-redux';
 import { USER_LOGOUT } from '../app/actions';
 
-const HomeScreen = () => {
-  const navigation = useNavigation();
+// Main authenticated user screen with logout and profile navigation buttons
+const HomeScreen: FC = () => {
+  const navigation = useNavigation<any>();
   const dispatch = useDispatch();
 
+  // Dispatches logout action to clear user authentication state
   const handleLogout = () => {
     console.log('User logged out');
     dispatch({ type: USER_LOGOUT });
@@ -45,21 +48,6 @@ const HomeScreen = () => {
           }}
         >
           Log out
-        </Text>
-      </Pressable>
-
-      {/* PROFILE BUTTON */}
-      <Pressable
-        onPress={() => navigation.navigate(ROUTES.PROFILE)}
-        style={{
-          backgroundColor: 'green',
-          padding: 10,
-          borderRadius: 20,
-          marginTop: 20,
-        }}
-      >
-        <Text style={{ fontSize: 40, color: 'white' }}>
-          GO TO PROFILE
         </Text>
       </Pressable>
     </View>

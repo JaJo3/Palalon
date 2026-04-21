@@ -1,13 +1,19 @@
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import React, { useState } from 'react';
+import React, { FC, useState } from 'react';
 import CustomTextInput from '../../components/CustomTextInput';
 
-const Register = ({ navigation }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+interface RegisterProps {
+  navigation?: any;
+}
 
-  const handleRegister = async () => {
+// Registration screen for creating new user accounts with password validation
+const Register: FC<RegisterProps> = ({ navigation }) => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+
+  // Validates form fields and creates new user account with error handling
+  const handleRegister = async (): Promise<void> => {
     if (!email || !password || !confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
@@ -20,7 +26,8 @@ const Register = ({ navigation }) => {
       Alert.alert('Success', 'Account created! Please login.');
       navigation?.goBack();
     } catch (err) {
-      Alert.alert('Registration Failed', err.message || 'Please try again');
+      const errorMessage = err instanceof Error ? err.message : 'Please try again';
+      Alert.alert('Registration Failed', errorMessage);
     }
   };
 

@@ -1,8 +1,25 @@
-import { View, Text } from 'react-native';
-import React from 'react';
+import { View, Text, StyleProp, ViewStyle, TextStyle } from 'react-native';
+import React, { FC } from 'react';
 import { TextInput } from 'react-native-gesture-handler';
 
-const CustomTextInput = ({ label, placeholder, value, onChangeText, secureTextEntry = false, ...props }) => {
+interface CustomTextInputProps {
+  label: string;
+  placeholder: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  secureTextEntry?: boolean;
+  [key: string]: any;
+}
+
+// Reusable custom text input with label, supports secure entry for passwords
+const CustomTextInput: FC<CustomTextInputProps> = ({
+  label,
+  placeholder,
+  value,
+  onChangeText,
+  secureTextEntry = false,
+  ...props
+}) => {
   return (
     <View style={{ width: '100%', paddingHorizontal: 20, marginVertical: 10 }}>
       <Text style={{ marginBottom: 5, fontWeight: '600', fontSize: 14 }}>
@@ -28,4 +45,5 @@ const CustomTextInput = ({ label, placeholder, value, onChangeText, secureTextEn
     </View>
   );
 };
+
 export default CustomTextInput;

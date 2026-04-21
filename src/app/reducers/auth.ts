@@ -5,15 +5,29 @@ import {
   USER_LOGIN_COMPLETE,
   USER_LOGIN_ERROR,
   RESET_USER_LOGIN,
+  ActionType,
 } from '../actions';
+import { LoginResponse } from '../api/auth';
 
-const INITIALSTATE = {
+export interface AuthState {
+  data: LoginResponse | null;
+  isLoading: boolean;
+  isError: boolean | string;
+}
+
+interface AuthAction {
+  type: ActionType;
+  payload?: any;
+}
+
+const INITIALSTATE: AuthState = {
   data: null,
   isLoading: false,
   isError: false,
 };
 
-export default function reducer(state = INITIALSTATE, action) {
+// Manages authentication state including login/logout and error handling
+export default function authReducer(state: AuthState = INITIALSTATE, action: AuthAction): AuthState {
   console.log(action.type);
   switch (action.type) {
     case USER_LOGIN_REQUEST:
@@ -26,7 +40,7 @@ export default function reducer(state = INITIALSTATE, action) {
 
     case USER_LOGIN_COMPLETE:
       return {
-        ...state,
+        ...state, //extended variable/spread operator
         data: action.payload,
         isLoading: false,
         isError: false,
@@ -50,7 +64,8 @@ export default function reducer(state = INITIALSTATE, action) {
   }
 }
 
-export const authLogin = payload => ({
+// Creates login action with user credentials payload
+export const authLogin = (payload: any) => ({
   type: USER_LOGIN,
   payload,
 });

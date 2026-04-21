@@ -1,6 +1,9 @@
 import { Image, Text, View } from 'react-native';
+import React, { FC } from 'react';
 import { IMG } from '../utils';
-const ProfileScreen = () => {
+
+// User profile screen displaying profile information and logo image
+const ProfileScreen: FC = () => {
   return (
     <View
       style={{
