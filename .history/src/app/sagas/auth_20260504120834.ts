@@ -2,7 +2,6 @@ import { put, takeLatest, call } from 'redux-saga/effects';
 import {
   USER_LOGIN,
   USER_LOGOUT,
-  USER_LOGOUT_REQUEST,
   USER_LOGIN_REQUEST,
   USER_LOGIN_COMPLETE,
   USER_LOGIN_ERROR,
@@ -10,7 +9,7 @@ import {
   INIT_AUTH_COMPLETE,
 } from '../actions';
 import { authLogin, LoginPayload } from '../api/auth';
-import { _getCurrentUser, _isSignedIn } from '../../utils/firebase';
+import { _isSignedIn } from '../../utils/firebase';
 
 // AsyncStorage import for token management
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -21,38 +20,21 @@ interface LoginAction {
 }
 
 // Initializes auth state by checking for existing signed-in user (non-blocking)
-// Prioritizes AsyncStorage token over Firebase to ensure Symfony JWT persists on restart
 export function* initAuthAsync(): Generator<any, void, any> {
   try {
-    // First, prioritize checking AsyncStorage for existing auth_token (Symfony JWT)
-    const token: string | null = yield call([AsyncStorage, 'getItem'], 'auth_token');
+    // Check if user is already signed in with Firebase/Google
+    const isSignedIn: boolean = yield call(_isSignedIn);
+    console.log('Auth Initialization - User signed in:', isSignedIn);
     
-    if (token) {
-      console.log('Existing JWT token found in AsyncStorage, restoring Symfony session');
-      yield put({
-        type: USER_LOGIN_COMPLETE,
-        payload: { token, access_token: token },
-      });
-    } else {
-      // Fall back to Firebase verification if no token in AsyncStorage
-      const isSignedIn: boolean = yield call(_isSignedIn);
-      console.log('No JWT token found, checking Firebase sign-in status:', isSignedIn);
-      
-      if (isSignedIn) {
-        const googleUser: any = yield call(_getCurrentUser);
-        if (googleUser?.user?.email) {
-          yield put({
-            type: USER_LOGIN_COMPLETE,
-            payload: {
-              token: `google:${googleUser.user.email}`,
-              access_token: `google:${googleUser.user.email}`,
-              user: googleUser.user,
-              provider: 'google',
-            },
-          });
-        }
-      } else {
-        console.log('User not signed in - login required');
+    // Get token from AsyncStorage if available
+    if (isSignedIn) {
+      const token: string | null = yield call([AsyncStorage, 'getItem'], 'auth_token');
+      if (token) {
+        console.log('Existing token found, restoring session');
+        yield put({
+          type: USER_LOGIN_COMPLETE,
+          payload: { token, access_token: token },
+        });
       }
     }
   } catch (error) {
@@ -71,32 +53,10 @@ export function* initAuth(): Generator<any, void, any> {
 }
 
 // Handles async login API call, token storage, and login state updates
-// Properly handles 401 Unauthorized and other error responses from Symfony backend
 export function* userLoginAsync(action: LoginAction): Generator<any, void, any> {
   console.log('User Login Action:', action.payload);
   yield put({ type: USER_LOGIN_REQUEST });
   try {
-    if (action.payload?.method === 'google') {
-      const googleEmail = action.payload?.username;
-      const googleUser = action.payload?.userInfo?.user;
-
-      if (!googleEmail) {
-        throw new Error('Google account email is missing');
-      }
-
-      const googleAuthResponse = {
-        token: `google:${googleEmail}`,
-        access_token: `google:${googleEmail}`,
-        user: googleUser || { email: googleEmail },
-        provider: 'google',
-      };
-
-      yield call([AsyncStorage, 'setItem'], 'auth_token', googleAuthResponse.access_token);
-      console.log('Google session saved to AsyncStorage');
-      yield put({ type: USER_LOGIN_COMPLETE, payload: googleAuthResponse });
-      return;
-    }
-
     const response: any = yield call(authLogin, action.payload);
     console.log('Login Success Response:', { payload: response });
     console.log('Token:', response.token);
@@ -108,7 +68,7 @@ export function* userLoginAsync(action: LoginAction): Generator<any, void, any> 
     }
     yield put({ type: USER_LOGIN_COMPLETE, payload: response });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Invalid credentials';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Login Error:', errorMessage);
     yield put({ type: USER_LOGIN_ERROR, payload: errorMessage });
   }
@@ -125,7 +85,6 @@ interface LogoutAction {
 }
 
 // Handles logout by clearing token and resetting authentication state
-// Ensures USER_LOGOUT is only dispatched after token is successfully removed from AsyncStorage
 export function* userLogoutAsync(action: LogoutAction): Generator<any, void, any> {
   console.log('User Logout Action:', action.payload);
   try {
@@ -133,20 +92,16 @@ export function* userLogoutAsync(action: LogoutAction): Generator<any, void, any
     yield call([AsyncStorage, 'removeItem'], 'auth_token');
     console.log('Token removed from AsyncStorage');
     
-    // Dispatch USER_LOGOUT action only after successful token removal
-    // This resets auth state in Redux and triggers navigation back to login screen
+    // Dispatch USER_LOGOUT action to reset auth state in Redux
+    // This will trigger navigation back to AuthNav (login screen)
     yield put({ type: USER_LOGOUT });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('Logout Error:', errorMessage);
-    
-    // Still dispatch logout to ensure user can access login screen even if token removal fails
-    yield put({ type: USER_LOGOUT });
   }
 }
 
-// Listens for USER_LOGOUT_REQUEST actions and executes userLogoutAsync saga
-// Prevents infinite loops by separating request action (USER_LOGOUT_REQUEST) from completion action (USER_LOGOUT)
+// Listens for USER_LOGOUT actions and executes userLogoutAsync saga
 export function* userLogout(): Generator<any, void, any> {
-  yield takeLatest(USER_LOGOUT_REQUEST, userLogoutAsync);
+  yield takeLatest(USER_LOGOUT, userLogoutAsync);
 }

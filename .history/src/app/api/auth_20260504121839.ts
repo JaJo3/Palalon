@@ -10,9 +10,7 @@ export interface LoginResponse {
 
 export interface LoginPayload {
   username: string;
-  password?: string;
-  method?: 'password' | 'google';
-  userInfo?: any;
+  password: string;
 }
 
 const BASE_URL = 'http://10.0.2.2:8000/api';

@@ -57,13 +57,7 @@ export default function authReducer(state: AuthState = INITIALSTATE, action: Aut
         isError: false,
       };
     case USER_LOGOUT:
-      return {
-        ...state,
-        data: null,
-        isLoading: false,
-        isError: false,
-        isInitialized: true, // Keep initialized state so login page displays instead of splash
-      };
+      return INITIALSTATE;
 
     case USER_LOGIN_ERROR:
       return {

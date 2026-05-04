@@ -8,47 +8,6 @@ import { RootState } from '../../app/reducers/index';
 import { _signInGoogle } from '../../utils/firebase';
 import { showSuccess, showError, showInfo } from '../../components/alertMsg';
 
-// React Native compatible base64 decoding
-const decodeBase64 = (str: string): string => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  let result = '';
-  let i = 0;
-  str = str.replace(/[^A-Za-z0-9+/]/g, '');
-  
-  while (i < str.length) {
-    const encoded1 = chars.indexOf(str.charAt(i++));
-    const encoded2 = chars.indexOf(str.charAt(i++));
-    const encoded3 = chars.indexOf(str.charAt(i++));
-    const encoded4 = chars.indexOf(str.charAt(i++));
-    
-    const bitmap = (encoded1 << 18) | (encoded2 << 12) | (encoded3 << 6) | encoded4;
-    
-    result += String.fromCharCode((bitmap >> 16) & 255);
-    result += String.fromCharCode((bitmap >> 8) & 255);
-    result += String.fromCharCode(bitmap & 255);
-  }
-  
-  return result;
-};
-
-// Utility function to decode JWT token
-const decodeJWT = (token: string): any => {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      throw new Error('Invalid JWT format');
-    }
-    
-    const payload = parts[1];
-    // Decode base64 for React Native
-    const decoded = decodeBase64(payload);
-    return JSON.parse(decoded);
-  } catch (error) {
-    console.error('Failed to decode JWT:', error);
-    return null;
-  }
-};
-
 // Login screen for user authentication with username and password inputs
 const Login: FC = () => {
   const [username, setUsername] = useState<string>('');
@@ -61,9 +20,10 @@ const Login: FC = () => {
 
   useEffect(() => {
     if (data && !isLoading && !isError) {
-      // Show success message
-      // Navigation happens automatically via RootNavigation when Redux state changes
       showSuccess(`Welcome ${data.user?.email || username}!`, 'Login Successful');
+      setTimeout(() => {
+        navigation?.replace('MainNav');
+      }, 1500);
     }
     if (isError && !isLoading) {
       showError(typeof isError === 'string' ? isError : 'Login failed', 'Login Error');
@@ -93,38 +53,17 @@ const Login: FC = () => {
 
       if (result.success) {
         console.log('Google Sign-In Result:', result.data);
-        console.log('User object:', result.data?.user);
-        
-        // Extract email from GoogleSignin response
-        // Try multiple approaches to get the email
-        let email = result.data?.user?.email;
-        let name = result.data?.user?.name || result.data?.user?.givenName;
-        
-        // If email is not directly available, try to decode JWT token
-        if (!email && result.data?.idToken) {
-          const tokenPayload = decodeJWT(result.data.idToken);
-          if (tokenPayload) {
-            email = tokenPayload.email;
-            name = tokenPayload.name || name;
-            console.log('Extracted from JWT - Email:', email, 'Name:', name);
-          }
-        }
-        
-        console.log('Final Extracted Email:', email, 'Name:', name);
-        
-        if (!email) {
-          showError('Could not retrieve email from Google account', 'Sign-In Error');
-          setIsGoogleSigningIn(false);
-          return;
-        }
+        // Extract user data from the correct structure
+        const userInfo = result.data.user || result.data;
+        const email = userInfo?.email || userInfo?.primaryEmailAddress?.address;
+        const userName = userInfo?.name || userInfo?.givenName || email || 'User';
         
         showSuccess(
-          `Welcome ${name || email}!`,
+          `Welcome ${userName}!`,
           'Sign-In Successful'
         );
 
         // Dispatch login action with Google user data
-        // Navigation will happen automatically when Redux state updates (in useEffect above)
         dispatch({
           type: USER_LOGIN,
           payload: {
@@ -133,6 +72,10 @@ const Login: FC = () => {
             userInfo: result.data,
           },
         });
+
+        setTimeout(() => {
+          navigation?.replace('MainNav');
+        }, 1500);
       } else {
         showError(result.error || result.message, 'Sign-In Failed');
       }

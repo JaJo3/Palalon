@@ -3,7 +3,9 @@
   "compilerOptions": {
     "types": [
       "jest"
-    ]
+    ],
+    "ignoreDeprecations": "5.0",
+    "skipLibCheck": true
   },
   "include": [
     "**/*.ts",
@@ -12,7 +14,11 @@
     "nativewind-env.d.ts"
   ],
   "exclude": [
-    "**/node_modules",
-    "**/Pods"
+    "node_modules",
+    "Pods",
+    "android",
+    "ios",
+    "dist",
+    "build"
   ]
 }

@@ -1,6 +1,6 @@
 // utils
-import { NavigationContainer } from '@react-navigation/native';
-import React, { FC, useEffect } from 'react';
+import { NavigationContainer, LinkingOptions } from '@react-navigation/native';
+import React, { FC, useEffect, useRef } from 'react';
 import { Platform, StatusBar, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 import AuthNav from './AuthNav';
@@ -11,6 +11,8 @@ import { RootState } from '../app/reducers/index';
 const RootNavigation: FC = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const { data, isInitialized } = useSelector((state: RootState) => state.auth);
+  const navigationRef = useRef(null);
+  const isUserLoggedIn = data && (data.access_token || data.token);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -18,7 +20,18 @@ const RootNavigation: FC = () => {
     }
   }, [isDarkMode]);
 
-  console.log('Auth Data:', data, 'Initialized:', isInitialized);
+  // When auth state changes, reset navigation to prevent white screen
+  useEffect(() => {
+    if (navigationRef.current && !isUserLoggedIn) {
+      // Reset navigation stack when user logs out
+      navigationRef.current?.reset({
+        index: 0,
+        routes: [{ name: 'RootAuth' }],
+      });
+    }
+  }, [isUserLoggedIn]);
+
+  console.log('Auth Data:', data, 'Initialized:', isInitialized, 'Logged In:', isUserLoggedIn);
 
   // Only render navigation once auth has been initialized
   // This prevents flashing between screens while auth is being checked
@@ -27,8 +40,11 @@ const RootNavigation: FC = () => {
   }
 
   return (
-    <NavigationContainer>
-      {data && (data.access_token || data.token) ? <MainNav /> : <AuthNav />}
+    <NavigationContainer
+      ref={navigationRef}
+      key={isUserLoggedIn ? 'authenticated' : 'unauthenticated'}
+    >
+      {isUserLoggedIn ? <MainNav /> : <AuthNav />}
     </NavigationContainer>
   );
 };

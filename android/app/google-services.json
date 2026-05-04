@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "930179066116",
+    "project_id": "appdev-7b47d",
+    "storage_bucket": "appdev-7b47d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:930179066116:android:79e24bad0b658416234851",
+        "android_client_info": {
+          "package_name": "com.palalon"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "930179066116-u9icm5hq0k8j3g6f5o0hq85aop90l7dq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.palalon",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "930179066116-h63ic6o8pl48sdma4lqggvtbrr3skvvr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxsALXNBFC__xttcBF4YlSrBHeRAW3xN8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "930179066116-h63ic6o8pl48sdma4lqggvtbrr3skvvr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

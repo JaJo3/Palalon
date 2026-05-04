@@ -8,29 +8,6 @@ import { RootState } from '../../app/reducers/index';
 import { _signInGoogle } from '../../utils/firebase';
 import { showSuccess, showError, showInfo } from '../../components/alertMsg';
 
-// React Native compatible base64 decoding
-const decodeBase64 = (str: string): string => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  let result = '';
-  let i = 0;
-  str = str.replace(/[^A-Za-z0-9+/]/g, '');
-  
-  while (i < str.length) {
-    const encoded1 = chars.indexOf(str.charAt(i++));
-    const encoded2 = chars.indexOf(str.charAt(i++));
-    const encoded3 = chars.indexOf(str.charAt(i++));
-    const encoded4 = chars.indexOf(str.charAt(i++));
-    
-    const bitmap = (encoded1 << 18) | (encoded2 << 12) | (encoded3 << 6) | encoded4;
-    
-    result += String.fromCharCode((bitmap >> 16) & 255);
-    result += String.fromCharCode((bitmap >> 8) & 255);
-    result += String.fromCharCode(bitmap & 255);
-  }
-  
-  return result;
-};
-
 // Utility function to decode JWT token
 const decodeJWT = (token: string): any => {
   try {
@@ -40,8 +17,8 @@ const decodeJWT = (token: string): any => {
     }
     
     const payload = parts[1];
-    // Decode base64 for React Native
-    const decoded = decodeBase64(payload);
+    // Decode base64 (using atob which is available in React Native)
+    const decoded = atob(payload);
     return JSON.parse(decoded);
   } catch (error) {
     console.error('Failed to decode JWT:', error);

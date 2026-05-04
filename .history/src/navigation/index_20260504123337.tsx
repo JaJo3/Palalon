@@ -11,6 +11,7 @@ import { RootState } from '../app/reducers/index';
 const RootNavigation: FC = () => {
   const isDarkMode = useColorScheme() === 'dark';
   const { data, isInitialized } = useSelector((state: RootState) => state.auth);
+  const isUserLoggedIn = !!(data && (data.access_token || data.token));
 
   useEffect(() => {
     if (Platform.OS === 'android') {
@@ -18,7 +19,7 @@ const RootNavigation: FC = () => {
     }
   }, [isDarkMode]);
 
-  console.log('Auth Data:', data, 'Initialized:', isInitialized);
+  console.log('Auth Data:', data, 'Initialized:', isInitialized, 'Logged In:', isUserLoggedIn);
 
   // Only render navigation once auth has been initialized
   // This prevents flashing between screens while auth is being checked
@@ -27,8 +28,10 @@ const RootNavigation: FC = () => {
   }
 
   return (
-    <NavigationContainer>
-      {data && (data.access_token || data.token) ? <MainNav /> : <AuthNav />}
+    <NavigationContainer
+      key={isUserLoggedIn ? 'authenticated' : 'unauthenticated'}
+    >
+      {isUserLoggedIn ? <MainNav /> : <AuthNav />}
     </NavigationContainer>
   );
 };

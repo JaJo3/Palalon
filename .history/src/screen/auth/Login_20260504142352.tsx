@@ -8,47 +8,6 @@ import { RootState } from '../../app/reducers/index';
 import { _signInGoogle } from '../../utils/firebase';
 import { showSuccess, showError, showInfo } from '../../components/alertMsg';
 
-// React Native compatible base64 decoding
-const decodeBase64 = (str: string): string => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  let result = '';
-  let i = 0;
-  str = str.replace(/[^A-Za-z0-9+/]/g, '');
-  
-  while (i < str.length) {
-    const encoded1 = chars.indexOf(str.charAt(i++));
-    const encoded2 = chars.indexOf(str.charAt(i++));
-    const encoded3 = chars.indexOf(str.charAt(i++));
-    const encoded4 = chars.indexOf(str.charAt(i++));
-    
-    const bitmap = (encoded1 << 18) | (encoded2 << 12) | (encoded3 << 6) | encoded4;
-    
-    result += String.fromCharCode((bitmap >> 16) & 255);
-    result += String.fromCharCode((bitmap >> 8) & 255);
-    result += String.fromCharCode(bitmap & 255);
-  }
-  
-  return result;
-};
-
-// Utility function to decode JWT token
-const decodeJWT = (token: string): any => {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      throw new Error('Invalid JWT format');
-    }
-    
-    const payload = parts[1];
-    // Decode base64 for React Native
-    const decoded = decodeBase64(payload);
-    return JSON.parse(decoded);
-  } catch (error) {
-    console.error('Failed to decode JWT:', error);
-    return null;
-  }
-};
-
 // Login screen for user authentication with username and password inputs
 const Login: FC = () => {
   const [username, setUsername] = useState<string>('');
@@ -102,11 +61,14 @@ const Login: FC = () => {
         
         // If email is not directly available, try to decode JWT token
         if (!email && result.data?.idToken) {
-          const tokenPayload = decodeJWT(result.data.idToken);
-          if (tokenPayload) {
-            email = tokenPayload.email;
-            name = tokenPayload.name || name;
+          try {
+            const tokenParts = result.data.idToken.split('.');
+            const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
+            email = payload.email;
+            name = payload.name || name;
             console.log('Extracted from JWT - Email:', email, 'Name:', name);
+          } catch (e) {
+            console.warn('Failed to decode JWT token:', e);
           }
         }
         

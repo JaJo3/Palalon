@@ -10,7 +10,7 @@ import {
   INIT_AUTH_COMPLETE,
 } from '../actions';
 import { authLogin, LoginPayload } from '../api/auth';
-import { _getCurrentUser, _isSignedIn } from '../../utils/firebase';
+import { _isSignedIn } from '../../utils/firebase';
 
 // AsyncStorage import for token management
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -38,20 +38,7 @@ export function* initAuthAsync(): Generator<any, void, any> {
       const isSignedIn: boolean = yield call(_isSignedIn);
       console.log('No JWT token found, checking Firebase sign-in status:', isSignedIn);
       
-      if (isSignedIn) {
-        const googleUser: any = yield call(_getCurrentUser);
-        if (googleUser?.user?.email) {
-          yield put({
-            type: USER_LOGIN_COMPLETE,
-            payload: {
-              token: `google:${googleUser.user.email}`,
-              access_token: `google:${googleUser.user.email}`,
-              user: googleUser.user,
-              provider: 'google',
-            },
-          });
-        }
-      } else {
+      if (!isSignedIn) {
         console.log('User not signed in - login required');
       }
     }
@@ -76,27 +63,6 @@ export function* userLoginAsync(action: LoginAction): Generator<any, void, any> 
   console.log('User Login Action:', action.payload);
   yield put({ type: USER_LOGIN_REQUEST });
   try {
-    if (action.payload?.method === 'google') {
-      const googleEmail = action.payload?.username;
-      const googleUser = action.payload?.userInfo?.user;
-
-      if (!googleEmail) {
-        throw new Error('Google account email is missing');
-      }
-
-      const googleAuthResponse = {
-        token: `google:${googleEmail}`,
-        access_token: `google:${googleEmail}`,
-        user: googleUser || { email: googleEmail },
-        provider: 'google',
-      };
-
-      yield call([AsyncStorage, 'setItem'], 'auth_token', googleAuthResponse.access_token);
-      console.log('Google session saved to AsyncStorage');
-      yield put({ type: USER_LOGIN_COMPLETE, payload: googleAuthResponse });
-      return;
-    }
-
     const response: any = yield call(authLogin, action.payload);
     console.log('Login Success Response:', { payload: response });
     console.log('Token:', response.token);
